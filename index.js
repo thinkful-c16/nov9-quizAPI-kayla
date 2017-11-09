@@ -26,6 +26,7 @@ function fetchToken() {
   //send token with every question API request
   const tokenURL = BASE_URL+TOKEN_PATH;
   $.getJSON('https://opentdb.com/api_token.php?command=request', function(token){
+    const tokenCode = token.token;
     console.log(token);
   });
 
@@ -70,6 +71,7 @@ function displayCategories(data) {
 }
 
 const CATEGORIES = [];
+console.log(CATEGORIES);
 
 const TOP_LEVEL_COMPONENTS = [
   'js-intro', 'js-question', 'js-question-feedback', 'js-outro', 'js-quiz-status'
