@@ -13,32 +13,35 @@ const MAIN_PATH = '/api.php';
 const TOKEN_PATH = '/api_token.php';
 
 function getTokenData(){}
-  //code
+//code
 
 // https://opentdb.com/api_token.php?command=request
 // https://opentdb.com/?q=%2Fapi_token.php&command=request
 // https://opentdb.com/api.php?amount=10&token=YOURTOKENHERE
 
 //fetchData//request generates random token
-let tokenCode
+let tokenCode;
 
 function fetchToken() {
   //send token with every question API request
   const tokenURL = BASE_URL+TOKEN_PATH;
   $.getJSON('https://opentdb.com/api_token.php?command=request', function(token){
-    const tokenCode = token.token;
+    if (token !== 1) {
+      throw new Error(token.response_message);
+    } else {
+      fetchQuestions(token);
+    }
     console.log(token);
   });
 
 }
 
-
 function fetchQuestions(token, category) {
-  //recieves token and category id from user
+  //recieves token from fetchtoken and category id from user
   const query = {
     q: MAIN_PATH, 
     amount: 10,
-    category: $(category.id),
+    category,
     token,
     type: 'multiple'
   };
@@ -66,7 +69,7 @@ function displayCategories(data) {
       index
     };
   });
-  CATEGORIES.push(results);
+  //   CATEGORIES.push(results);
   generateQuestionCategoryHTML(results);
 }
 
