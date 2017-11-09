@@ -1,5 +1,76 @@
 'use strict';
 
+//app will get user input to start quiz from lister
+//fetch token once the DOM loads
+//choose categories, etc
+//fetch token
+//build query URL
+//fetch questions
+//pass session token into question API call
+
+const BASE_URL = 'https://opentdb.com';
+const MAIN_PATH = '/api.php';
+const TOKEN_PATH = '/api_token.php';
+
+function getTokenData(){}
+  //code
+
+// https://opentdb.com/api_token.php?command=request
+// https://opentdb.com/?q=%2Fapi_token.php&command=request
+// https://opentdb.com/api.php?amount=10&token=YOURTOKENHERE
+
+//fetchData//request generates random token
+let tokenCode
+
+function fetchToken() {
+  //send token with every question API request
+  const tokenURL = BASE_URL+TOKEN_PATH;
+  $.getJSON('https://opentdb.com/api_token.php?command=request', function(token){
+    console.log(token);
+  });
+
+}
+
+
+function fetchQuestions(token, category) {
+  //recieves token and category id from user
+  const query = {
+    q: MAIN_PATH, 
+    amount: 10,
+    category: $(category.id),
+    token,
+    type: 'multiple'
+  };
+  $.getJSON(BASE_URL, query, function(data) {
+    console.log(data);
+  });
+}
+
+
+function getCategories() {
+  const url = BASE_URL+'/api_category.php';
+  $.getJSON(url, function(data) {
+    displayCategories(data);
+    console.log(data);    
+  });
+}
+
+function displayCategories(data) {
+  const results = data.trivia_categories.map(function(item, index) {
+    const categoryID = item.id;
+    const categoryName = item.name;
+    return {
+      categoryID,
+      categoryName,
+      index
+    };
+  });
+  CATEGORIES.push(results);
+  generateQuestionCategoryHTML(results);
+}
+
+const CATEGORIES = [];
+
 const TOP_LEVEL_COMPONENTS = [
   'js-intro', 'js-question', 'js-question-feedback', 'js-outro', 'js-quiz-status'
 ];
@@ -63,6 +134,16 @@ const getQuestion = function(index) {
 
 // HTML generator functions
 // ========================
+
+const generateQuestionCategoryHTML = function(categories) {
+  categories.map(function(item, index) { 
+    return `
+      <div class='js-intro js-categories js-category-index">Select from the following categories>${categories}
+            </div>`;
+  });
+};
+
+
 const generateAnswerItemHtml = function(answer) {
   return `
     <li class="answer-item">
@@ -109,31 +190,31 @@ const render = function() {
   $('.js-progress').html(`<span>Question ${current} of ${total}`);
 
   switch (store.page) {
-    case 'intro':
-      $('.js-intro').show();
-      break;
+  case 'intro':
+    $('.js-intro').show();
+    break;
 
-    case 'question':
-      html = generateQuestionHtml(question);
-      $('.js-question').html(html);
-      $('.js-question').show();
-      $('.quiz-status').show();
-      break;
+  case 'question':
+    html = generateQuestionHtml(question);
+    $('.js-question').html(html);
+    $('.js-question').show();
+    $('.quiz-status').show();
+    break;
 
-    case 'answer':
-      html = generateFeedbackHtml(feedback);
-      $('.js-question-feedback').html(html);
-      $('.js-question-feedback').show();
-      $('.quiz-status').show();
-      break;
+  case 'answer':
+    html = generateFeedbackHtml(feedback);
+    $('.js-question-feedback').html(html);
+    $('.js-question-feedback').show();
+    $('.quiz-status').show();
+    break;
 
-    case 'outro':
-      $('.js-outro').show();
-      $('.quiz-status').show();
-      break;
+  case 'outro':
+    $('.js-outro').show();
+    $('.quiz-status').show();
+    break;
 
-    default:
-      return;
+  default:
+    return;
   }
 };
 
@@ -177,6 +258,8 @@ const handleNextQuestion = function() {
 // On DOM Ready, run render() and add event listeners
 $(() => {
   render();
+  getCategories();
+  fetchToken();
 
   $('.js-intro, .js-outro').on('click', '.js-start', handleStartQuiz);
   $('.js-question').on('submit', handleSubmitAnswer);
